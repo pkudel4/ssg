@@ -143,7 +143,13 @@ send, so the preview is exactly the mail:
 - a footer with the unsubscribe link, in the reader's language (en, pl, hi,
   de, fr; others get en), appended to both parts always;
 - a minimal layout: inline styles, system fonts, `lang` attribute, light and
-  dark colours meeting WCAG 2.2 AA, no remote resources of its own;
+  dark colours meeting WCAG 2.2 AA, no remote resources of its own. The
+  optional `NEWSLETTER_MAIL_BRAND`, `NEWSLETTER_MAIL_FONT` (`serif`/`sans`),
+  `NEWSLETTER_MAIL_COLORS` and `NEWSLETTER_MAIL_COLORS_DARK`
+  (`page= card= text= muted= accent= rule=` as `#rrggbb`) add a text
+  wordmark, a card, a font and a palette, and style the content's headings,
+  links, quotes, rules and images inline; a palette below AA is ignored
+  (`src/render-brand.ts`);
 - headers `List-Unsubscribe: <{site}/api/newsletter/unsubscribe?token=…>`,
   `List-Unsubscribe-Post: List-Unsubscribe=One-Click` (RFC 8058, handled by the
   `newsletter` template), `List-Id: <newsletter.{host}>`, `Precedence: bulk`.

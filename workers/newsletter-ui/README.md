@@ -135,6 +135,9 @@ names are the `newsletter` template's, so one set of values serves both.
 | `NEWSLETTER_HASH_SALT` | secret | — | salts the short-lived failed-login records |
 | `NEWSLETTER_SITE_URL` | var | — | the site's `https://` origin, where `newsletter` runs; needed to preview, test, schedule and confirm |
 | `NEWSLETTER_MAIL_FROM`, `NEWSLETTER_MAIL_FROM_NAME` | var | — | default sender (a campaign may set its own) |
+| `NEWSLETTER_MAIL_BRAND` | var | — | a text wordmark above the campaign content, linked to the site |
+| `NEWSLETTER_MAIL_FONT` | var | `sans` | `serif` (Georgia stack) or `sans` (system stack) for the campaign frame |
+| `NEWSLETTER_MAIL_COLORS`, `NEWSLETTER_MAIL_COLORS_DARK` | var | neutral palette | the frame's light and dark palettes as `page= card= text= muted= accent= rule=` `#rrggbb` pairs; a palette below WCAG 2.2 AA or malformed is ignored |
 | `NEWSLETTER_RESEND_API_KEY` | secret | — | transport: Resend |
 | `NEWSLETTER_MAILCHANNELS_API_KEY` | secret | — | transport: MailChannels |
 | `NEWSLETTER_SMTP_HOST`, `_PORT`, `_USER`, `_HELO` | var | port `587` | transport: your SMTP server (`465` = TLS, `587` = STARTTLS) |

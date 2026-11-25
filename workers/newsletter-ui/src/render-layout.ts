@@ -7,10 +7,15 @@
 // <style> block only as an improvement where it is honoured (link colour, a
 // dark scheme for clients that announce one).
 //
-// Colours (Google palette), contrast checked against WCAG 2.2 AA:
-//   light  text #202124 on #ffffff 16.1:1 · footer #5f6368 6.0:1 · links #1967d2 5.6:1
-//   dark   text #e8eaed on #202124 13.2:1 · footer #bdc1c6  9.0:1 · links #8ab4f8 7.7:1
+// Colours come from the brand (render-brand.ts): the neutral default palette
+// unless the site configured its own. A brand may add a text wordmark above
+// the content (text, not an image: image proxies may not reach the site) and a
+// card: when the palette's `card` differs from its `page`, the content sits on
+// a bordered card and the footer is centred below it. Every palette that gets
+// here has passed the WCAG 2.2 AA check in render-brand.ts.
 
+import { DEFAULT_BRAND } from "./render-brand";
+import type { Brand } from "./render-brand";
 import { escapeHtml } from "./render-entities";
 
 export interface LayoutInput {
@@ -18,36 +23,55 @@ export interface LayoutInput {
   title: string; // the subject
   content: string; // sanitized HTML
   footer: string; // the footer's HTML (unsubscribe link)
+  brand?: Brand | null; // null or absent = DEFAULT_BRAND
+  home?: string; // the site's origin, the wordmark's link
 }
 
-const STYLE = [
-  ":root{color-scheme:light dark;supported-color-schemes:light dark}",
-  "a{color:#1967d2}",
-  "@media (prefers-color-scheme:dark){",
-  ".nl-bg{background:#202124!important}",
-  ".nl-text{color:#e8eaed!important}",
-  ".nl-foot{color:#bdc1c6!important;border-color:#5f6368!important}",
-  ".nl-bg a{color:#8ab4f8!important}",
-  "}",
-  "img{max-width:100%;height:auto}",
-].join("");
+function style(b: Brand): string {
+  const d = b.dark;
+  return [
+    ":root{color-scheme:light dark;supported-color-schemes:light dark}",
+    `a{color:${b.light.accent}}`,
+    "@media (prefers-color-scheme:dark){",
+    `.nl-bg{background:${d.page}!important}`,
+    `.nl-card{background:${d.card}!important;border-color:${d.rule}!important}`,
+    `.nl-text{color:${d.text}!important}`,
+    `.nl-foot{color:${d.muted}!important;border-color:${d.rule}!important}`,
+    `.nl-bg a,.nl-text h1,.nl-text h2{color:${d.accent}!important}`,
+    `.nl-text h3,.nl-text blockquote{color:${d.muted}!important}`,
+    `.nl-text hr,.nl-text blockquote{border-color:${d.rule}!important}`,
+    "}",
+    "img{max-width:100%;height:auto}",
+  ].join("");
+}
 
-const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans','Noto Sans Devanagari',Arial,sans-serif";
+function header(b: Brand, home: string | undefined): string {
+  if (!b.name) return "";
+  const mark = `font-family:${b.font};font-size:34px;line-height:1.2;color:${b.light.accent};text-decoration:none;`;
+  const name = escapeHtml(b.name);
+  const inner = home ? `<a href="${escapeHtml(home)}" style="${mark}">${name}</a>` : `<span style="${mark}">${name}</span>`;
+  return `<tr><td align="center" style="padding:8px 0 20px;">${inner}</td></tr>\n`;
+}
 
 export function layout(p: LayoutInput): string {
+  const b = p.brand ?? DEFAULT_BRAND;
+  const l = b.light;
+  const card = l.card !== l.page;
+  const box = card ? `background:${l.card};padding:28px 24px;border:1px solid ${l.rule};border-radius:8px;` : "";
+  const foot = card ? "padding:20px 8px 0;text-align:center;" : `padding-top:16px;margin-top:24px;border-top:1px solid ${l.rule};text-align:left;`;
   return (
     `<!doctype html>\n<html lang="${escapeHtml(p.lang)}" dir="ltr">\n<head>\n` +
     `<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n` +
     `<meta name="color-scheme" content="light dark">\n<meta name="supported-color-schemes" content="light dark">\n` +
-    `<title>${escapeHtml(p.title)}</title>\n<style>${STYLE}</style>\n</head>\n` +
-    `<body class="nl-bg" style="margin:0;padding:0;background:#ffffff;">\n` +
-    `<table role="presentation" class="nl-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;">` +
-    `<tr><td align="center" style="padding:24px 16px;">\n` +
+    `<title>${escapeHtml(p.title)}</title>\n<style>${style(b)}</style>\n</head>\n` +
+    `<body class="nl-bg" style="margin:0;padding:0;background:${l.page};">\n` +
+    `<table role="presentation" class="nl-bg" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${l.page};">` +
+    `<tr><td align="center" style="padding:24px ${card ? 12 : 16}px;">\n` +
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">\n` +
-    `<tr><td class="nl-text" style="font-family:${FONT};font-size:16px;line-height:1.6;color:#202124;text-align:left;">\n` +
+    header(b, p.home) +
+    `<tr><td class="nl-text${card ? " nl-card" : ""}" style="${box}font-family:${b.font};font-size:16px;line-height:1.6;color:${l.text};text-align:left;">\n` +
     `${p.content}\n</td></tr>\n` +
-    `<tr><td class="nl-foot" style="padding-top:16px;margin-top:24px;border-top:1px solid #dadce0;font-family:${FONT};` +
-    `font-size:13px;line-height:1.5;color:#5f6368;text-align:left;">\n${p.footer}\n</td></tr>\n` +
+    `<tr><td class="nl-foot" style="${foot}font-family:${b.font};font-size:13px;line-height:1.5;color:${l.muted};">\n${p.footer}\n</td></tr>\n` +
     `</table>\n</td></tr></table>\n</body>\n</html>\n`
   );
 }

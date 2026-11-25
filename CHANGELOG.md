@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`newsletter-ui` can brand the campaign frame.** Four optional variables:
+  `NEWSLETTER_MAIL_BRAND` (a text wordmark above the content, linked to the
+  site), `NEWSLETTER_MAIL_FONT` (`serif` or `sans`), and
+  `NEWSLETTER_MAIL_COLORS` / `NEWSLETTER_MAIL_COLORS_DARK` (`page`, `card`,
+  `text`, `muted`, `accent`, `rule` as `#rrggbb`; keys left out keep the
+  default). A `card` different from `page` puts the content on a bordered card
+  with the footer centred below. A branded mail styles the content's headings,
+  links, quotes, rules and images inline (on the sanitized tree, from the
+  brand, so authors still cannot inject styles); the text part is unchanged. A
+  palette that is malformed, or whose text colours fall below WCAG 2.2 AA
+  against the card or the page, is ignored as a whole. With none of the
+  variables set, the mail is byte for byte what it was.
 - **Data files beside a page are published as co-located assets (#444).**
   `.json`, `.csv`, `.txt` and `.xml` files next to a Markdown page or post
   are now copied to its output directory, like images, audio, video, PDFs

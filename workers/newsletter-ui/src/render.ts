@@ -12,8 +12,11 @@ import { guarded, rewriteText, rewriteTree } from "./click-rewrite";
 import type { LinkRewriter } from "./click-rewrite";
 import { FOOTER, footerLanguage } from "./i18n";
 import { markdownToHtml } from "./markdown";
+import { brandOf } from "./render-brand";
+import type { Brand, BrandEnv } from "./render-brand";
 import { escapeHtml } from "./render-entities";
 import { layout } from "./render-layout";
+import { contentStyles, styleTree } from "./render-style";
 import { htmlToText } from "./render-text";
 import { sanitizeHtml, serialize } from "./sanitize";
 
@@ -35,6 +38,7 @@ export interface Recipient {
 export interface Site {
   url: string; // the origin, "https://example.com"
   host: string; // "example.com"
+  brand?: Brand; // the mail frame's look (render-brand.ts); absent = the neutral default
 }
 
 export interface Rendered {
@@ -68,10 +72,13 @@ export function unknownVariables(...texts: (string | null)[]): string[] {
 
 // siteOf reads NEWSLETTER_SITE_URL. Only https: — the unsubscribe link sits in
 // a List-Unsubscribe header mailbox providers POST to. null = not usable.
-export function siteOf(env: { NEWSLETTER_SITE_URL?: string }): Site | null {
+// The NEWSLETTER_MAIL_* brand variables, when any is set, ride along.
+export function siteOf(env: { NEWSLETTER_SITE_URL?: string } & BrandEnv): Site | null {
   try {
     const u = new URL((env.NEWSLETTER_SITE_URL ?? "").trim());
-    return u.protocol === "https:" ? { url: u.origin, host: u.hostname } : null;
+    if (u.protocol !== "https:") return null;
+    const brand = brandOf(env);
+    return brand ? { url: u.origin, host: u.hostname, brand } : { url: u.origin, host: u.hostname };
   } catch {
     return null;
   }
@@ -106,8 +113,12 @@ export function renderMessage(c: CampaignContent, r: Recipient, site: Site, opts
   const t = FOOTER[lang];
   const reason = t.reason.replace("{site}", site.host);
 
-  const footerHtml = `<p style="margin:0;">${escapeHtml(reason)}<br>\n<a href="${escapeHtml(unsub)}">${escapeHtml(t.unsubscribe)}</a></p>`;
-  const html = layout({ lang, title: subject, content: serialize(tree), footer: footerHtml });
+  // A branded mail styles the content inline (render-style.ts); the text part
+  // below is still made from the unstyled tree.
+  const linkStyle = site.brand ? ` style="${contentStyles(site.brand).a}"` : "";
+  const footerHtml = `<p style="margin:0;">${escapeHtml(reason)}<br>\n<a href="${escapeHtml(unsub)}"${linkStyle}>${escapeHtml(t.unsubscribe)}</a></p>`;
+  const content = serialize(site.brand ? styleTree(tree, site.brand) : tree);
+  const html = layout({ lang, title: subject, content, footer: footerHtml, brand: site.brand, home: site.url });
   const override = c.textOverride !== null ? substitute(c.textOverride, values, false).trim() : null;
   const body = override === null ? htmlToText(tree) : links ? rewriteText(override, links) : override;
   const text = `${body}\n\n-- \n${reason}\n${t.unsubscribe}: ${unsub}\n`;

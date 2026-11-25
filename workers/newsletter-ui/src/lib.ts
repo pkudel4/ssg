@@ -8,11 +8,13 @@
 // queue consumer, and a campaign cannot be sent or resumed reliably without both.
 
 import type { MailEnv } from "./mail/_transport";
+import type { BrandEnv } from "./render-brand";
 
 // The mail settings (sender, Resend / MailChannels key, SMTP) come from
 // MailEnv, under the same names as the `newsletter` template, so one
-// configuration serves both workers.
-export interface Env extends MailEnv {
+// configuration serves both workers. BrandEnv holds the optional
+// NEWSLETTER_MAIL_* look of the campaign frame (render-brand.ts).
+export interface Env extends MailEnv, BrandEnv {
   NEWSLETTER_DB: D1Database; // the same database the `newsletter` template writes
   // The site's origin, e.g. "https://example.com": where the `newsletter`
   // template's unsubscribe endpoint lives. Required to preview, test or

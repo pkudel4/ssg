@@ -94,6 +94,13 @@ NEWSLETTER_UI_BASE = "/newsletter-admin"
 # NEWSLETTER_SITE_URL = "https://<example.com>"   # the site's origin; needed to preview, test, schedule
 # NEWSLETTER_MAIL_FROM = "news@<example.com>"     # default sender (a campaign may set its own)
 # NEWSLETTER_MAIL_FROM_NAME = "<Example News>"
+# The campaign frame's look (src/render-brand.ts); all optional, unset = the neutral frame.
+# A palette names any of page, card, text, muted, accent, rule; card ≠ page draws a card.
+# A palette that is malformed or below WCAG 2.2 AA (4.5:1) is ignored as a whole.
+# NEWSLETTER_MAIL_BRAND = "<Example News>"      # text wordmark above the content
+# NEWSLETTER_MAIL_FONT = "serif"                # serif | sans (default)
+# NEWSLETTER_MAIL_COLORS = "page=#f6f1e7 card=#ffffff text=#2b2b2b muted=#5c5c5c accent=#a1401b rule=#e3d6c3"
+# NEWSLETTER_MAIL_COLORS_DARK = "page=#1b1a18 card=#262420 text=#efeae2 muted=#cfc8bc accent=#f0a37f rule=#4a4540"
 # NEWSLETTER_SMTP_HOST = "<smtp.example.com>"     # own mail server (used when no provider key is set)
 # NEWSLETTER_SMTP_PORT = "587"                    # 465 = TLS, 587 = STARTTLS; 25 is blocked
 # NEWSLETTER_SMTP_USER = "<mailer@example.com>"
